@@ -5,4 +5,4 @@ edition = "2021"
 publish = false
 
 [workspace]
-members = ["command", "state"]
+members = ["command", "state", "chain_of_responsibility"]
