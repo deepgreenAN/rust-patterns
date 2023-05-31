@@ -1,14 +1,26 @@
-trait State {
-    fn request_review(self: Box<Self>) -> Box<dyn State>;
-    fn approve(self: Box<Self>) -> Box<dyn State>;
-    fn content<'a>(&self, _post: &'a Post) -> &'a str {
-        ""
+/// 状態の変更に失敗したときのエラー．今回は分かりやすさのため用いているが，状態遷移を何もしない実装にすべき場合も多い
+#[derive(Debug)]
+pub struct StateError;
+
+trait PostState {
+    fn request_review(self: Box<Self>) -> Result<Box<dyn PostState>, StateError> {
+        Err(StateError)
+    }
+    fn approve(self: Box<Self>) -> Result<Box<dyn PostState>, StateError> {
+        Err(StateError)
+    }
+    fn content<'a>(&self, _post: &'a Post) -> Result<&'a str, StateError> {
+        Err(StateError)
+    }
+    /// あくまでもスタック領域のPostを使うことで(Stateを実装した型に状態を持たせない)コストを最小限にする．
+    fn add_text<'a>(&self, _post: &'a mut Post, _text: &str) -> Result<(), StateError> {
+        Err(StateError)
     }
 }
 
 pub struct Post {
-    state: Option<Box<dyn State>>,
-    content: String,
+    pub(crate) state: Option<Box<dyn PostState>>,
+    pub(crate) content: String,
 }
 
 #[allow(clippy::new_without_default)]
@@ -19,21 +31,37 @@ impl Post {
             content: String::new(),
         }
     }
-    pub fn add_text(&mut self, text: &str) {
-        self.content.push_str(text);
-    }
-    pub fn request_review(&mut self) {
-        if let Some(s) = self.state.take() {
-            self.state = Some(s.request_review())
+    pub fn add_text(&mut self, text: &str) -> Result<(), StateError> {
+        if let Some(post_state) = self.state.take() {
+            post_state.add_text(self, text)?;
+            self.state = Some(post_state);
+            Ok(())
+        } else {
+            panic!("state does not have value") // 簡単のため．実際はエラーを伝播
         }
     }
-    pub fn approve(&mut self) {
-        if let Some(s) = self.state.take() {
-            self.state = Some(s.approve())
+    pub fn request_review(&mut self) -> Result<(), StateError> {
+        if let Some(post_state) = self.state.take() {
+            self.state = Some(post_state.request_review()?);
+            Ok(())
+        } else {
+            panic!("state does not have value") // 簡単のため．実際はエラーを伝播
         }
     }
-    pub fn content(&self) -> &str {
-        self.state.as_ref().unwrap().content(self)
+    pub fn approve(&mut self) -> Result<(), StateError> {
+        if let Some(post_state) = self.state.take() {
+            self.state = Some(post_state.approve()?);
+            Ok(())
+        } else {
+            panic!("state does not have value") // 簡単のため．実際はエラーを伝播
+        }
+    }
+    pub fn content(&self) -> Result<&str, StateError> {
+        if let Some(post_state) = self.state.as_ref() {
+            post_state.content(self)
+        } else {
+            panic!("state does not have value") // 簡単のため．実際はエラーを伝播
+        }
     }
 }
 
@@ -44,45 +72,37 @@ struct Draft;
 struct PendingReview;
 struct Published;
 
-impl State for Draft {
-    fn request_review(self: Box<Self>) -> Box<dyn State> {
-        Box::new(PendingReview)
+impl PostState for Draft {
+    fn add_text<'a>(&self, post: &'a mut Post, text: &str) -> Result<(), StateError> {
+        post.content.push_str(text);
+        Ok(())
     }
-    fn approve(self: Box<Self>) -> Box<dyn State> {
-        self
-    }
-}
-
-impl State for PendingReview {
-    fn request_review(self: Box<Self>) -> Box<dyn State> {
-        self
-    }
-    fn approve(self: Box<Self>) -> Box<dyn State> {
-        Box::new(Published)
+    fn request_review(self: Box<Self>) -> Result<Box<dyn PostState>, StateError> {
+        Ok(Box::new(PendingReview))
     }
 }
 
-impl State for Published {
-    fn request_review(self: Box<Self>) -> Box<dyn State> {
-        self
+impl PostState for PendingReview {
+    fn approve(self: Box<Self>) -> Result<Box<dyn PostState>, StateError> {
+        Ok(Box::new(Published))
     }
-    fn approve(self: Box<Self>) -> Box<dyn State> {
-        self
-    }
-    fn content<'a>(&self, post: &'a Post) -> &'a str {
-        &post.content
+}
+
+impl PostState for Published {
+    fn content<'a>(&self, post: &'a Post) -> Result<&'a str, StateError> {
+        Ok(&post.content)
     }
 }
 
 fn main() {
     let mut post = Post::new();
 
-    post.add_text("I ate a salad for lunch today");
-    assert_eq!("", post.content());
+    post.add_text("I ate a salad for lunch today").unwrap();
+    assert!(matches!(post.content(), Err(_)));
 
-    post.request_review();
-    assert_eq!("", post.content());
+    post.request_review().unwrap();
+    assert!(matches!(post.content(), Err(_)));
 
-    post.approve();
-    assert_eq!("I ate a salad for lunch today", post.content());
+    post.approve().unwrap();
+    assert_eq!("I ate a salad for lunch today", post.content().unwrap());
 }
