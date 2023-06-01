@@ -1,8 +1,2 @@
-[package]
-name = "rust_pattern"
-version = "0.1.0"
-edition = "2021"
-publish = false
-
 [workspace]
-members = ["command", "state", "chain_of_responsibility"]
+members = ["command", "state", "chain_of_responsibility", "mediator"]
