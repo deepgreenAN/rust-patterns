@@ -1,2 +1,8 @@
 [workspace]
-members = ["command", "state", "chain_of_responsibility", "mediator"]
+members = [
+    "command", 
+    "state", 
+    "chain_of_responsibility", 
+    "mediator",
+    "observer"
+]

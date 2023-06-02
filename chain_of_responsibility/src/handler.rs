@@ -1,19 +1,38 @@
-use crate::{Patient, ProcessError};
+mod handler_func;
 
-type HandlerFuncBox = Box<dyn Fn(Patient) -> Result<Patient, ProcessError>>;
+use crate::{Patient, ProcessError};
+pub use handler_func::HandlerFunc;
 
 pub struct Handler {
-    func: HandlerFuncBox,
+    func: Box<dyn HandlerFunc>,
     next: Option<Box<Handler>>,
     failed_next: Option<Box<Handler>>,
 }
 
 impl Handler {
-    pub fn new<F: Fn(Patient) -> Result<Patient, ProcessError> + 'static>(
-        func: F,
-    ) -> HandlerBuilder {
+    /// コンストラクタ．関数を引数にとってビルダーを返す．
+    pub fn new<F: HandlerFunc + 'static>(func: F) -> HandlerBuilder {
         HandlerBuilder::new(func)
     }
+    /// 再帰して自身をクローン．
+    pub fn recur_clone(&self) -> Handler {
+        let func = dyn_clone::clone_box(&*self.func);
+        let next = match self.next.as_ref() {
+            Some(next_handler) => Some(Box::new(next_handler.recur_clone())),
+            None => None,
+        };
+        let failed_next = match self.failed_next.as_ref() {
+            Some(failed_next_handler) => Some(Box::new(failed_next_handler.recur_clone())),
+            None => None,
+        };
+
+        Handler {
+            func,
+            next,
+            failed_next,
+        }
+    }
+    /// ハンドラーを再帰的に実行．
     pub fn execute(&self, patient: Patient) -> Patient {
         // ハンドラ自体の関数を実行
         let patient_res = (self.func)(patient);
@@ -53,8 +72,14 @@ impl Handler {
     }
 }
 
+impl Clone for Handler {
+    fn clone(&self) -> Self {
+        self.recur_clone()
+    }
+}
+
 pub struct HandlerBuilder {
-    func: HandlerFuncBox,
+    func: Box<dyn HandlerFunc>,
     next: Option<Box<Handler>>,
     failed_next: Option<Box<Handler>>,
 }
@@ -70,10 +95,8 @@ impl Default for HandlerBuilder {
 }
 
 impl HandlerBuilder {
-    pub fn new<F: Fn(Patient) -> Result<Patient, ProcessError> + 'static>(
-        func: F,
-    ) -> HandlerBuilder {
-        let func = Box::new(func) as HandlerFuncBox;
+    pub fn new<F: HandlerFunc + 'static>(func: F) -> HandlerBuilder {
+        let func = Box::new(func) as Box<dyn HandlerFunc>;
 
         HandlerBuilder {
             func,

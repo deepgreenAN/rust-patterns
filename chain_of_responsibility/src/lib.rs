@@ -3,7 +3,7 @@ mod handler;
 
 pub use handler::{Handler, HandlerBuilder};
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct Patient {
     name: String,
     level: u32,
@@ -40,6 +40,7 @@ impl Patient {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct ProcessError {
     patient: Patient,
     error_content: String,
