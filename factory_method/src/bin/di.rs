@@ -31,21 +31,17 @@ impl Room for OrdinaryRoom {
 // -------------------------------------------------------------------------------------------------
 // MazeGame
 
-struct MazeGame<T: Room> {
-    rooms: Vec<T>,
-}
+/// プロダクトを使ったロジックを記述．
+struct MazeGame;
 
-impl<T: Room> MazeGame<T> {
-    fn new<F>(maze_factory: F) -> Self
+impl MazeGame {
+    fn play<F, T>(&self, maze_factory: F)
     where
         F: Fn() -> Vec<T>,
+        T: Room,
     {
-        Self {
-            rooms: maze_factory(),
-        }
-    }
-    fn play(&self) {
-        for room in self.rooms.iter() {
+        let rooms = maze_factory();
+        for room in rooms.iter() {
             room.render();
         }
     }
@@ -73,16 +69,20 @@ fn ordinary_factory() -> Vec<OrdinaryRoom> {
 
 // -------------------------------------------------------------------------------------------------
 
-fn game_run<T: Room>(maze_game: MazeGame<T>) {
+fn game_run<F, T>(maze_game: &MazeGame, factory: F)
+where
+    F: Fn() -> Vec<T>,
+    T: Room,
+{
     println!("Loading resources...");
     println!("Starting the game...");
-    maze_game.play();
+    maze_game.play(factory);
 }
 
 fn main() {
-    let magic_maze_game = MazeGame::new(magic_factory);
-    game_run(magic_maze_game);
+    let maze_game = MazeGame;
 
-    let ordinary_maze_game = MazeGame::new(ordinary_factory);
-    game_run(ordinary_maze_game);
+    game_run(&maze_game, magic_factory);
+
+    game_run(&maze_game, ordinary_factory);
 }

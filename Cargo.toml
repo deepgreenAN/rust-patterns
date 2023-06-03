@@ -5,5 +5,6 @@ members = [
     "chain_of_responsibility", 
     "mediator",
     "observer",
-    "factory_method"
+    "factory_method",
+    "abstract_factory"
 ]

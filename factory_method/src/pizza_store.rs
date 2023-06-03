@@ -1,13 +1,12 @@
 use crate::pizza::{Pizza, PizzaName};
 
-pub struct PizzaStore<T: PizzaName> {
-    _pizza_type: std::marker::PhantomData<T>,
-}
+pub struct PizzaStore;
 
-impl<T: PizzaName> PizzaStore<T> {
-    pub fn order_pizza<F>(factory: F) -> Pizza<T>
+impl PizzaStore {
+    pub fn order_pizza<F, T>(&self, factory: F) -> Pizza<T>
     where
         F: Fn() -> Pizza<T>,
+        T: PizzaName,
     {
         let pizza = factory();
 
