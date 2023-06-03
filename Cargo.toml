@@ -4,5 +4,6 @@ members = [
     "state", 
     "chain_of_responsibility", 
     "mediator",
-    "observer"
+    "observer",
+    "factory_method"
 ]
