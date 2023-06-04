@@ -8,5 +8,6 @@ members = [
     "factory_method",
     "abstract_factory",
     "adapter",
-    "bridge"
+    "bridge",
+    "composite"
 ]
