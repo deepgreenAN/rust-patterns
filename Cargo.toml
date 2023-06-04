@@ -7,5 +7,6 @@ members = [
     "observer",
     "factory_method",
     "abstract_factory",
-    "adapter"
+    "adapter",
+    "bridge"
 ]
