@@ -1,6 +1,7 @@
 pub type Image = Vec<Vec<[u8; 3]>>;
 
 /// アダプティとなるレガシーコード
+#[allow(dead_code)]
 pub struct LegacyCV {
     height: u32,
     width: u32,

@@ -9,5 +9,6 @@ members = [
     "abstract_factory",
     "adapter",
     "bridge",
-    "composite"
+    "composite",
+    "decorator"
 ]
