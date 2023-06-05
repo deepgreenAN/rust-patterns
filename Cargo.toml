@@ -10,5 +10,6 @@ members = [
     "adapter",
     "bridge",
     "composite",
-    "decorator"
+    "decorator",
+    "facade"
 ]

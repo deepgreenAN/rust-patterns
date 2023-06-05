@@ -9,7 +9,7 @@
 - Strategyパターン: Rustでは関数を関数ポインタ・具象型・トレイトオブジェクトとしてフィールドに保持できるため、そちらを利用すべき(Strategyパターンの使い方としては関数ポインタかトレイトオブジェクトが利用できる)
 - Template Methodパターン: トレイトの一般的な使い方である．
 - Visitorパターン: Rustのトレイトは既存の型に実装することが可能であるため，そちらを利用すべき．元の型の実装を壊すことなく，新しい機能を追加できる(既存のデータ構造・アルゴリズムと新しい機能を別々の型に分ける必要がない)．スコープにトレイトをインポートするかどうかによって機能を絞り込むこともできるため，単一責任の原則にも可能な限り対応できる．
-- Builderパターン: Rustでは型に対するビルダーパターンをよく用いる．[APIガイド](https://rust-lang.github.io/api-guidelines/type-safety.html#builders-enable-construction-of-complex-values-c-builder)に書かれている．非消費ビルダーであれば基本的にtyped-builderやderive-builderクレートを用いる．
+- Builderパターン: Rustでは型に対するビルダーパターンをよく用いる．[APIガイド](https://rust-lang.github.io/api-guidelines/type-safety.html#builders-enable-construction-of-complex-values-c-builder)に簡単な例が書かれており、非消費ビルダーであれば基本的にtyped-builder(コンパイル時に重複や不足をチェック)やderive-builderクレート(動的に重複や不足をチェック)を用いる．
 - Prototypeパターン: Rustにはビルトインのクローントレイトがあるためそちらを利用すべき
 - Singletonパターン: Rustにはlazyなグローバル変数が利用できるonce-cellクレートがあるため，そちらを利用すべき．値を変更したい場合は内部可変性のあるスマートポインタを一緒に用いる．
 
