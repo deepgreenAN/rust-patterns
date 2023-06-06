@@ -11,5 +11,6 @@ members = [
     "bridge",
     "composite",
     "decorator",
-    "facade"
+    "facade",
+    "flyweight"
 ]
