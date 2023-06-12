@@ -5,6 +5,7 @@ members = [
     "chain_of_responsibility", 
     "mediator",
     "observer",
+    "observer/actor_model",
     "factory_method",
     "abstract_factory",
     "adapter",
@@ -13,5 +14,6 @@ members = [
     "decorator",
     "facade",
     "flyweight",
+    "flyweight/ecs",
     "proxy"
 ]
