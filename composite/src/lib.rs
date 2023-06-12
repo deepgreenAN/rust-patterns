@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 /// リーフとコンポジットを動的にチェックするためのエラー
 #[derive(Debug)]
 pub struct FileSystemError(String);
@@ -33,8 +35,9 @@ pub enum FileComponent {
 }
 
 impl FileComponent {
-    pub fn new_folder(name: String) -> Self {
-        FileComponent::Folder(name, Vec::new())
+    pub fn new_folder<S: Into<Cow<'static, str>>>(name: S) -> Self {
+        let name: Cow<'static, str> = name.into();
+        FileComponent::Folder(name.into_owned(), Vec::new())
     }
     pub fn add(&mut self, child: FileComponent) -> Result<(), FileSystemError> {
         match self {
@@ -80,6 +83,30 @@ impl FileComponent {
             }
         }
     }
+}
+
+// -------------------------------------------------------------------------------------------------
+// 以下は生成用のヘルパー関数・マクロ
+
+pub fn text_file<S: Into<Cow<'static, str>>>(name: S) -> FileComponent {
+    let name: Cow<'static, str> = name.into();
+    FileComponent::File(File::TextFile(name.into_owned()))
+}
+
+#[macro_export]
+macro_rules! folder {
+    ($name:expr) => {
+        $crate::FileComponent::new_folder($name)
+    };
+    ($name:expr, $($child:expr),*) => {
+        {
+            let mut folder_comp = $crate::FileComponent::new_folder($name);
+            $(
+                folder_comp.add($child).unwrap(); // フォルダーであるのは確定しているため
+            )*
+            folder_comp
+        }
+    };
 }
 
 // -------------------------------------------------------------------------------------------------

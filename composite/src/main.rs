@@ -1,61 +1,21 @@
 fn main() {
-    use composite::{File, FileComponent};
+    use composite::{folder, text_file};
 
-    let a_folder = {
-        let e_folder = {
-            let mut e_folder = FileComponent::new_folder("e".to_string());
-            e_folder
-                .add(FileComponent::File(File::TextFile("i.txt".to_string())))
-                .unwrap();
-            e_folder
-                .add(FileComponent::File(File::TextFile("j.txt".to_string())))
-                .unwrap();
-            e_folder
-        };
-
-        let mut a_folder = FileComponent::new_folder("a".to_string());
-        a_folder
-            .add(FileComponent::File(File::TextFile("d.txt".to_string())))
-            .unwrap();
-        a_folder.add(e_folder).unwrap();
-        a_folder
-            .add(FileComponent::File(File::TextFile("f.txt".to_string())))
-            .unwrap();
-
-        a_folder
-    };
-
-    let b_folder = {
-        let g_folder = {
-            let mut g_folder = FileComponent::new_folder("g".to_string());
-            g_folder
-                .add(FileComponent::File(File::TextFile("k.txt".to_string())))
-                .unwrap();
-            g_folder
-                .add(FileComponent::File(File::TextFile("l.txt".to_string())))
-                .unwrap();
-            g_folder
-        };
-
-        let mut b_folder = FileComponent::new_folder("b".to_string());
-        b_folder.add(g_folder).unwrap();
-        b_folder
-            .add(FileComponent::File(File::TextFile("h.txt".to_string())))
-            .unwrap();
-
-        b_folder
-    };
-
-    let parent_folder = {
-        let mut parent_folder = FileComponent::new_folder("parent".to_string());
-        parent_folder.add(a_folder).unwrap();
-        parent_folder.add(b_folder).unwrap();
-        parent_folder
-            .add(FileComponent::File(File::TextFile("c.txt".to_string())))
-            .unwrap();
-
-        parent_folder
-    };
+    let parent_folder = folder!(
+        "parent",
+        folder!(
+            "a",
+            text_file("d.txt"),
+            folder!("e", text_file("i.txt"), text_file("j.txt")),
+            text_file("f.txt")
+        ),
+        folder!(
+            "b",
+            folder!("g", text_file("k.txt"), text_file("l.txt")),
+            text_file("h.txt")
+        ),
+        text_file("c.txt")
+    );
 
     parent_folder.print_recursive();
 
