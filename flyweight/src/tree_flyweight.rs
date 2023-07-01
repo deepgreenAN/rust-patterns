@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-use uuid::Uuid;
+use std::rc::Rc;
 
 #[derive(Default, Debug, PartialEq)]
 pub struct Color {
@@ -23,17 +22,31 @@ pub struct TreeType {
 }
 
 /// 内因的状態のファクトリ
-pub fn tree_type_factory(tree_type: TreeType, tree_type_map: &mut HashMap<Uuid, TreeType>) -> Uuid {
-    let found_id = tree_type_map
-        .iter()
-        .find_map(|(k, v)| if *v == tree_type { Some(*k) } else { None });
+#[derive(Debug)]
+pub struct TreeTypeFactory {
+    tree_types: Vec<Rc<TreeType>>,
+}
 
-    match found_id {
-        Some(found_id) => found_id,
-        None => {
-            let new_id = Uuid::new_v4();
-            tree_type_map.insert(new_id, tree_type);
-            new_id
+impl TreeTypeFactory {
+    pub fn new() -> Self {
+        Self {
+            tree_types: Vec::new(),
+        }
+    }
+
+    pub fn register_tree_type(&mut self, new_tree_type: TreeType) -> Rc<TreeType> {
+        let found_tree_type = self
+            .tree_types
+            .iter()
+            .find(|tree_type| ***tree_type == new_tree_type);
+
+        match found_tree_type {
+            Some(found_tree_type) => Rc::clone(found_tree_type),
+            None => {
+                let registered_tree_type = Rc::new(new_tree_type);
+                self.tree_types.push(Rc::clone(&registered_tree_type));
+                registered_tree_type
+            }
         }
     }
 }

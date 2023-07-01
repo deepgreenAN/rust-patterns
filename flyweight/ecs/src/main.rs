@@ -48,7 +48,7 @@ pub fn start_up(mut commands: Commands) {
 pub fn all_tree_print(tree_query: Query<&Tree>, tree_type_query: Query<&TreeType>) {
     for tree in tree_query.iter() {
         println!("Tree: {tree:?}");
-        let tree_type = tree.tree_type_from_query(&tree_type_query).unwrap();
+        let tree_type = tree_type_query.get(tree.tree_type_entity).unwrap();
         println!("TreeType: {tree_type:?}");
     }
 }
